@@ -153,13 +153,19 @@ public:
      *
      * TODO: allow user settable remote endpoint addresses if this seems useful
      *
+     * @param ec Set to indicate what error occurred, if any.
+     * @param asio_ec_ptr Optional pointer to an error code that will be filled
+     * with the underlying asio error, if any.
      * @return A string identifying the address of the remote endpoint
      */
-    std::string get_remote_endpoint(lib::error_code & ec) const {
+    std::string get_remote_endpoint(lib::error_code & ec,
+        lib::asio::error_code* asio_ec_ptr=NULL) const
+    {
         std::stringstream s;
 
         lib::asio::error_code aec;
         lib::asio::ip::tcp::endpoint ep = m_socket->lowest_layer().remote_endpoint(aec);
+        if( asio_ec_ptr ) (*asio_ec_ptr)=aec;
 
         if (aec) {
             ec = error::make_error_code(error::pass_through);

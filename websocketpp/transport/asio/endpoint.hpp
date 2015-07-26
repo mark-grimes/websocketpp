@@ -340,8 +340,10 @@ public:
      *
      * @param ep An endpoint to read settings from
      * @param ec Set to indicate what error occurred, if any.
+     * @param asio_ec_ptr Optional pointer to an error code that will be filled
+     * with the underlying asio error, if any.
      */
-    void listen(lib::asio::ip::tcp::endpoint const & ep, lib::error_code & ec)
+    void listen(lib::asio::ip::tcp::endpoint const & ep, lib::error_code & ec, lib::asio::error_code* asio_ec_ptr=NULL )
     {
         if (m_state != READY) {
             m_elog->write(log::elevel::library,
@@ -375,6 +377,7 @@ public:
             m_state = LISTENING;
             ec = lib::error_code();
         }
+        if( asio_ec_ptr ) (*asio_ec_ptr)=bec;
     }
 
     /// Set up endpoint for listening manually
@@ -402,13 +405,15 @@ public:
      * @param internet_protocol The internet protocol to use.
      * @param port The port to listen on.
      * @param ec Set to indicate what error occurred, if any.
+     * @param asio_ec_ptr Optional pointer to an error code that will be filled
+     * with the underlying asio error, if any.
      */
     template <typename InternetProtocol>
     void listen(InternetProtocol const & internet_protocol, uint16_t port,
-        lib::error_code & ec)
+        lib::error_code & ec, lib::asio::error_code* asio_ec_ptr=NULL)
     {
         lib::asio::ip::tcp::endpoint ep(internet_protocol, port);
-        listen(ep,ec);
+        listen(ep,ec,asio_ec_ptr);
     }
 
     /// Set up endpoint for listening with protocol and port
@@ -442,9 +447,11 @@ public:
      *
      * @param port The port to listen on.
      * @param ec Set to indicate what error occurred, if any.
+     * @param asio_ec_ptr Optional pointer to an error code that will be filled
+     * with the underlying asio error, if any.
      */
-    void listen(uint16_t port, lib::error_code & ec) {
-        listen(lib::asio::ip::tcp::v6(), port, ec);
+    void listen(uint16_t port, lib::error_code & ec, lib::asio::error_code* asio_ec_ptr=NULL) {
+        listen(lib::asio::ip::tcp::v6(), port, ec, asio_ec_ptr);
     }
 
     /// Set up endpoint for listening on a port
@@ -478,9 +485,11 @@ public:
      * @param service A string identifying the requested service. This may be a
      * descriptive name or a numeric string corresponding to a port number.
      * @param ec Set to indicate what error occurred, if any.
+     * @param asio_ec_ptr Optional pointer to an error code that will be filled
+     * with the underlying asio error, if any.
      */
     void listen(std::string const & host, std::string const & service,
-        lib::error_code & ec)
+        lib::error_code & ec, lib::asio::error_code* asio_ec_ptr=NULL)
     {
         using lib::asio::ip::tcp;
         tcp::resolver r(*m_io_service);
@@ -493,7 +502,7 @@ public:
             ec = make_error_code(error::invalid_host_service);
             return;
         }
-        listen(*endpoint_iterator,ec);
+        listen(*endpoint_iterator,ec,asio_ec_ptr);
     }
 
     /// Set up endpoint for listening on a host and service
